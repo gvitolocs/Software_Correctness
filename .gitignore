@@ -6,3 +6,5 @@ out/
 .project
 .settings/
 *.class
+.bsp/
+.DS_Store

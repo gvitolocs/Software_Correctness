@@ -59,8 +59,7 @@ public class DrawingCanvas extends Pane {
      * Clear the canvas and redraw: grid, bounding box, then all shapes in order.
      * Coursework: lines with Bresenham’s algorithm, circles with Midpoint circle algorithm,
      * text with built-in rendering (e.g. gc.fillText). Drawing outside the bounding box
-     * must be clipped (or only draw inside the box). Optionally highlight the “current”
-     * object (e.g. last drawn) for the demo.
+     * must be clipped. The currently drawn object must be highlighted (PDF section 2).
      * Tip: compute scale from (boxX2-boxX1), (boxY2-boxY1) and (getWidth()-2*margin),
      * (getHeight()-2*margin); use Math.min of the two ratios to keep aspect ratio.
      */

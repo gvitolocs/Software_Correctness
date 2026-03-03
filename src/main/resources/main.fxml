@@ -9,7 +9,7 @@
     <VBox HBox.hgrow="ALWAYS" spacing="8">
         <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
         <DrawingCanvas fx:id="drawingCanvas" VBox.vgrow="ALWAYS" minHeight="220" prefWidth="400" prefHeight="300" style="-fx-background-color: #fafafa;"/>
-        <Label text="Errors"/>
+        <Label text="Error messages"/>
         <TextArea fx:id="errorBox" editable="false" prefRowCount="3"/>
     </VBox>
     <VBox spacing="8" minWidth="260" prefWidth="300">

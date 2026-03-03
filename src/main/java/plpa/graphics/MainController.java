@@ -19,13 +19,6 @@ public class MainController {
     /** Called by the "Run" button in main.fxml (onAction="#onRun"). */
     @FXML
     private void onRun() {
-        String result = GraphicsLogic.interpret(programEditor.getText());
-        if (result.startsWith("ERR\n")) {
-            errorBox.setText(result.substring(4));
-            drawingCanvas.setDrawingData(null);
-        } else {
-            errorBox.clear();
-            drawingCanvas.setDrawingData(result.substring(3));
-        }
+        errorBox.setText("helloworld");
     }
 }
