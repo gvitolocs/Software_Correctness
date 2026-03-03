@@ -3,12 +3,11 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import plpa.graphics.DrawingCanvas?>
 
 <HBox xmlns:fx="http://javafx.com/fxml" fx:controller="plpa.graphics.MainController" spacing="0">
     <VBox HBox.hgrow="ALWAYS" spacing="8">
         <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-        <DrawingCanvas fx:id="drawingCanvas" VBox.vgrow="ALWAYS" minHeight="220" prefWidth="400" prefHeight="300" style="-fx-background-color: #fafafa;"/>
+        <Pane fx:id="drawingCanvasPane" VBox.vgrow="ALWAYS" minHeight="220" prefWidth="400" prefHeight="300" style="-fx-background-color: #fafafa;"/>
         <Label text="Error messages"/>
         <TextArea fx:id="errorBox" editable="false" prefRowCount="3"/>
     </VBox>

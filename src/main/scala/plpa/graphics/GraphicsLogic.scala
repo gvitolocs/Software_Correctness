@@ -1,22 +1,20 @@
 package plpa.graphics
 
 /**
- * Interpreter for the graphics language. Coursework: all drawing state (bounding box,
- * colours, etc.) must live here in Scala. The program string from the editor is passed
- * directly and must not be modified (e.g. do not split into separate commands before
- * passing to the interpreter).
+ * Interpreter for the graphics language. All drawing state (bounding box, colours,
+ * list of shapes) must live here in Scala. The program text from the editor is passed
+ * as-is; do not change it before calling interpret.
  */
 object GraphicsLogic {
 
   /**
-   * Interpret the program string (exactly as from the editor).
-   * Return "ERR\nmsg1\nmsg2\n..." on any error; otherwise return
-   * "OK\n" + drawing data (e.g. "BOX x1 y1 x2 y2\n" then LINE/CIRCLE/RECTANGLE/TEXT lines
-   * with optional colour). The Java GUI uses this to show errors or to pass data to
-   * DrawingCanvas (Java must not hold state).
-   * Tip: split into lines, trim, skip empty; first line must be (BOUNDING-BOX (x1 y1) (x2 y2)).
-   * Then process (DRAW c g1 g2 ...), (FILL c g), or standalone shapes; default colour black.
-   * Coursework: objects must be drawn in the order specified; output your shape list in that order.
+   * Interpret the whole program string. If there are errors, return "ERR\n" followed by
+   * one error message per line. Otherwise return "OK\n" followed by the drawing data:
+   * first line "BOX x1 y1 x2 y2", then one line per shape (LINE, CIRCLE, RECTANGLE, TEXT, etc.)
+   * with optional colour. The Java GUI shows errors in the error box and passes the part
+   * after "OK\n" to the canvas. The first line of the program must be (BOUNDING-BOX (x1 y1) (x2 y2)).
+   * Then you have (DRAW c g1 g2 ...), (FILL c g), or single shapes. Default colour is black.
+   * Output shapes in the same order they appear in the program.
    */
   def interpret(program: String): String = {
     // TODO: split into lines, parse each line, collect errors and shapes
@@ -26,9 +24,9 @@ object GraphicsLogic {
   }
 
   /**
-   * Parse (BOUNDING-BOX (x1 y1) (x2 y2)). Must be the first command (coursework).
-   * Tip: regex like """\(BOUNDING-BOX\s+\(([\d.]+)\s+([\d.]+)\)\s+\(([\d.]+)\s+([\d.]+)\)\)""".r
-   * or split on spaces/parens and match.
+   * Parse a line like (BOUNDING-BOX (x1 y1) (x2 y2)). Return the four numbers.
+   * This must be the first command. You can use a regex, or split by spaces and
+   * parentheses and then pattern match.
    */
   private def parseBoundingBox(line: String): Option[(Double, Double, Double, Double)] = {
     // TODO: implement
@@ -52,8 +50,8 @@ object GraphicsLogic {
   }
 
   /**
-   * Parse (RECTANGLE (x1 y1) (x2 y2)) — bottom-left (x1,y1) to top-right (x2,y2) (coursework).
-   * Return e.g. Some((x1, y1, x2, y2)) for the rectangle.
+   * Parse (RECTANGLE (x1 y1) (x2 y2)). (x1,y1) is bottom-left, (x2,y2) is top-right.
+   * Return the four numbers.
    */
   private def parseRectangle(line: String): Option[(Double, Double, Double, Double)] = {
     // TODO: implement
@@ -70,10 +68,9 @@ object GraphicsLogic {
   }
 
   /**
-   * Parse (DRAW c g1 g2 g3 ...): draw g1, g2, g3 in colour c. c can be a colour name or
-   * representation; g1, g2, g3 are nested commands like (LINE ...), (CIRCLE ...), etc.
-   * Tip: parse c, then recursively parse each g_i and emit shape lines with colour c.
-   * Outside DRAW the default colour is black.
+   * Parse (DRAW c g1 g2 ...): draw shapes g1, g2, ... in colour c. c is a colour name or
+   * value; g1, g2 are nested commands like (LINE ...), (CIRCLE ...). Parse the colour,
+   * then parse each shape and output a shape line with that colour attached.
    */
   private def parseDraw(line: String): Option[(String, List[String])] = {
     // TODO: implement (e.g. colour + list of shape data strings)
@@ -81,8 +78,8 @@ object GraphicsLogic {
   }
 
   /**
-   * Parse (FILL c g): fill object g with colour c.
-   * Tip: parse c and g (one shape), then emit a “fill” variant of that shape with colour c.
+   * Parse (FILL c g): fill one shape g with colour c.
+   * Parse the colour and the shape, then output a filled version of that shape with colour c.
    */
   private def parseFill(line: String): Option[(String, String)] = {
     // TODO: implement (e.g. colour + shape data string)
