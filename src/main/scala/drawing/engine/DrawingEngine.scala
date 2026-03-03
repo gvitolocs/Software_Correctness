@@ -1,6 +1,7 @@
 package drawing.engine
 
 import drawing.model._
+import drawing.algorithms._
 
 class DrawingEngine {
   def execute(commands: List[Command]): Either[String, List[Drawable]] = {
