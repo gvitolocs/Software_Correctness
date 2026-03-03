@@ -33,7 +33,7 @@ class DrawingEngine {
         state.copy(drawables = state.drawables ++ pixels)
 
       case Circle(x, y, radius) =>
-        var pixels = CircleAlgorithm.midpoint(x, y, radius, state.currentColor)
+        val pixels = CircleAlgorithm.midpoint(x, y, radius, state.currentColor)
         state.copy(drawables = state.drawables ++ pixels)
 
       case TextAt(x, y, text) =>

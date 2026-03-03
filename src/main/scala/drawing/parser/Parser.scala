@@ -1,7 +1,6 @@
 package drawing.parser
 
-import drawing.engine.DrawingEngine
-import drawing.model.*
+import drawing.model._
 
 object Parser {
   def parseInput(input: String): Either[String, List[Command]] = {
