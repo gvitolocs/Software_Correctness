@@ -1,23 +1,26 @@
 # Run PLPA Graphics IDE (Cursor / VS Code)
 
-## Using the Run button ▶ (recommended)
+## Run button ▶ with Java runner
 
-1. Open **Run and Debug** (Ctrl+Shift+D / Cmd+Shift+D).
-2. In the dropdown, select **"PLPA Graphics IDE (Run with Maven)"**.
-3. Press **Run** (▶) or **F5**.
+1. **Restart Cursor** (or VS Code) so it uses your system JDK instead of the embedded JRE.
+2. Open **Run and Debug** (Ctrl+Shift+D / Cmd+Shift+D).
+3. Select **"PLPA Graphics IDE (JavaFX)"**.
+4. Press **Run** (▶) or **F5**.
 
-This configuration runs `./mvnw javafx:run` for you, so the app starts the same way as in the terminal and does not crash on macOS.
+The embedded JRE in the Red Hat Java extension has been disabled on this machine, and the config points to your JDK at `/Library/Java/JavaVirtualMachines/temurin-25.jdk/Contents/Home`, so the runner should start without the macOS JavaFX crash.
 
-## Other ways to run
+## If the runner still crashes
 
-- **Terminal** → **Run Task…** → **Run PLPA Graphics IDE**
+- Use **"PLPA Graphics IDE (Run with Maven)"** (runs `./mvnw javafx:run`), or  
+- **Terminal** → **Run Task…** → **Run PLPA Graphics IDE**, or  
 - From a terminal: `./mvnw javafx:run`
 
-## Java runner (alternative)
+## Re-running the fix on another machine
 
-The **"PLPA Graphics IDE (JavaFX)"** config uses the Java extension runner. It can crash on macOS (NSTrackingRectTag). If you want to try it:
+To disable the embedded JRE so the Run button uses the system JDK:
 
-1. Set `JAVA_HOME` to your JDK 17 (e.g. on macOS: `export JAVA_HOME=$(/usr/libexec/java_home -v 17)`).
-2. Select **"PLPA Graphics IDE (JavaFX)"** and press Run.
+```bash
+./.vscode/disable-embedded-jre.sh
+```
 
-The same setup applies to both **Cursor** and **VS Code**.
+Then restart the editor. The script supports both Cursor (`~/.cursor/extensions`) and VS Code (`~/.vscode/extensions`).
