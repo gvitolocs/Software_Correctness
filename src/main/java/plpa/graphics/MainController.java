@@ -41,6 +41,14 @@ public class MainController implements Initializable {
     /** Called by the "Run" button in main.fxml (onAction="#onRun"). */
     @FXML
     private void onRun() {
-        errorBox.setText("helloworld");
+        String program = programEditor.getText();
+        String result = plpa.graphics.GraphicsLogic.interpret(program);
+        if (result.startsWith("ERR\n")) {
+            errorBox.setText(result.substring(4));
+            drawingCanvas.setDrawingData(null);
+        } else if (result.startsWith("OK\n")) {
+            errorBox.clear();
+            drawingCanvas.setDrawingData(result.substring(3));
+        }
     }
 }

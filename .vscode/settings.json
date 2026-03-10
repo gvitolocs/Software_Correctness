@@ -1,4 +1,19 @@
 {
   "metals.jvmOptions": ["-Xms256m", "-Xmx2g"],
-  "scala.compileServer.jvmOptions": ["-Xms256m", "-Xmx2g"]
+  "scala.compileServer.jvmOptions": [
+    "-Xms256m",
+    "-Xmx2g"
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive",
+
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "${env:JAVA_HOME}",
+      "default": true
+    }
+  ],
+  "java.jdt.ls.java.home": "${env:JAVA_HOME}",
+  "java.debug.settings.forceBuildBeforeLaunch": true,
+  "java.debug.settings.console": "integratedTerminal"
 }
