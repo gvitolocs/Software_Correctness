@@ -69,46 +69,28 @@ class DrawingEngine {
         state.copy(drawables = state.drawables :+ drawable)
 
       case Draw(color, items) =>
+        val previousColor = state.currentColor
         val stateWithColor = state.copy(currentColor = color)
         val finalState = items.foldLeft(stateWithColor) {
           (acc, item) => evaluateCommand(item, acc)
         }
-        finalState.copy(currentColor = Black)
+        finalState.copy(currentColor = previousColor)
 
       case Fill(color, item) =>
-        val stateWithColor = state.copy(currentColor = color)
-        val filled = evaluateFill(item, stateWithColor)
-        filled.copy(currentColor = Black)
+        val previousColor = state.currentColor
+        val filled = fillShape(item, color)
+        state.copy(
+          drawables = state.drawables ++ filled,
+          currentColor = previousColor
+        )
     }
   }
 
-  private def evaluateFill(command: Command, state: EngineState): EngineState = {
-    command match {
-      case Rectangle(x1, y1, x2, y2) =>
-        val pixels = fillRectangle(x1, y1, x2, y2, state.currentColor)
-        state.copy(drawables = state.drawables ++ pixels)
-
-      case Circle(cx, cy, r) =>
-        val pixels = fillCircle(cx, cy, r, state.currentColor)
-        state.copy(drawables = state.drawables ++ pixels)
-
-      case Line(x1, y1, x2, y2) =>
-        val pixels = LineAlgorithm.bresenham(x1, y1, x2, y2, state.currentColor)
-        state.copy(drawables = state.drawables ++ pixels)
-
-      case TextAt(x, y, text) =>
-        state.copy(drawables = state.drawables :+ Text(x, y, text, state.currentColor))
-
-      case Draw(color, items) =>
-        val newState = state.copy(currentColor = color)
-        val finalState = items.foldLeft(newState) {
-          (acc, item) => evaluateFill(item, acc)
-        }
-        finalState.copy(currentColor = state.currentColor)
-
-      case BoundingBox(_, _, _, _) =>
-        state
-    }
+  private def fillShape(cmd: Command, color: Color): List[Pixel] = cmd match {
+    case Rectangle(x1, y1, x2, y2) => fillRectangle(x1, y1, x2, y2, color)
+    case Circle(cx, cy, r) => fillCircle(cx, cy, r, color)
+    case Draw(c, items) => items.flatMap(item => fillShape(item, color))
+    case _ => List()
   }
 
   private def fillRectangle(x1: Int, y1: Int, x2: Int, y2: Int, color:Color): List[Pixel]={
