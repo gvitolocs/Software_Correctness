@@ -1,4 +1,4 @@
-package drawing.prova
+package drawing.Test
 
 import drawing.engine.DrawingEngine
 import drawing.model._
