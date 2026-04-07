@@ -5,6 +5,9 @@ import drawing.algorithms._
 
 class DrawingEngine {
   def execute(commands: List[Command]): Either[String, List[Drawable]] = {
+    if (!commands.headOption.exists(_.isInstanceOf[BoundingBox])) {
+      return Left("First command must be BOUNDING-BOX")
+    }
     val finalState = commands.foldLeft(EngineState()) {
       (acc, command) => evaluateCommand(command, acc)
     }
