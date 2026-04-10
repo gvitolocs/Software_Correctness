@@ -8,3 +8,8 @@ out/
 *.class
 .bsp/
 .DS_Store
+.vscode/
+.mvn/
+mvnw
+mvnw.cmd
+pom.xml
