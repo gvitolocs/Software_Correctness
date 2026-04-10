@@ -49,7 +49,11 @@ object GraphicsLogic {
       case Circle(x, y, r) => List(s"CIRCLE $x $y $r ${colorName(currentColor)}")
       case TextAt(x, y, t) => List(s"TEXT $x $y $t ${colorName(currentColor)}")
       case Draw(c, items) => items.flatMap(item => go(List(item), c))
-      case Fill(c, item) => go(List(item), c)
+      case Fill(c, item) => item match {
+        case Circle(x, y, r) => List(s"FILLED-CIRCLE $x $y $r ${colorName(c)}")
+        case Rectangle(x1, y1, x2, y2) => List(s"FILLED-RECTANGLE $x1 $y1 $x2 $y2 ${colorName(c)}")
+        case _ => go(List(item), c)
+      }
     }
     if (commands.isEmpty) ""
     else go(commands, Black).mkString("\n")

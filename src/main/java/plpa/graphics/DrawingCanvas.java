@@ -184,6 +184,35 @@ public class DrawingCanvas extends Pane {
                         gc.fillText(text, toPixelX(x), toPixelY(y));
                     }
                 }
+                case "FILLED-CIRCLE" -> {
+                    if (parts.length >= 5) {
+                        int cx = Integer.parseInt(parts[1]);
+                        int cy = Integer.parseInt(parts[2]);
+                        int r = Integer.parseInt(parts[3]);
+                        Color c = parseColor(parts[4]);
+                        double scale = getScale();
+                        double px = toPixelX(cx - r);
+                        double py = toPixelY(cy + r);
+                        gc.setFill(c);
+                        gc.fillOval(px, py, r * 2 * scale, r * 2 * scale);
+                    }
+                }
+                case "FILLED-RECTANGLE" -> {
+                    if (parts.length >= 6) {
+                        int x1 = Integer.parseInt(parts[1]);
+                        int x2 = Integer.parseInt(parts[2]);
+                        int y1 = Integer.parseInt(parts[3]);
+                        int y2 = Integer.parseInt(parts[4]);
+                        Color c = parseColor(parts[5]);
+                        double scale = getScale();
+                        double px = toPixelX(Math.min(x1, x2));
+                        double py = toPixelY(Math.max(y1, y2));
+                        double pw = Math.abs(x2 - x1) * scale;
+                        double ph = Math.abs(y2 - y1) * scale;
+                        gc.setFill(c);
+                        gc.fillRect(px, py, pw, ph);
+                    }
+                }
                 default -> { }
             }
         } catch (NumberFormatException ignored) { }
