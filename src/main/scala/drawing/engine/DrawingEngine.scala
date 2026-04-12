@@ -19,6 +19,10 @@ class DrawingEngine {
   }
 
   def executeWithSteps(commands: List[Command]): Either[String, List[RenderStep]]= {
+    if (!commands.headOption.exists(_.isInstanceOf[BoundingBox])) {
+      return Left("First command must be BOUNDING-BOX")
+    }
+
     var state = EngineState()
     val steps = scala.collection.mutable.ListBuffer[RenderStep]()
 
