@@ -138,8 +138,9 @@ public class DrawingCanvas extends Pane {
 
     private void drawShapeLine(String line) {
         String[] parts = line.split("\\s+");
-        if (parts.length < 4) return;
+        if (parts.length < 3) return;
         String kind = parts[0].toUpperCase();
+        boolean highlight = "highlight".equals(parts[parts.length - 1]);
         try {
             switch (kind) {
                 case "LINE" -> {
@@ -148,7 +149,7 @@ public class DrawingCanvas extends Pane {
                         int y1 = Integer.parseInt(parts[2]);
                         int x2 = Integer.parseInt(parts[3]);
                         int y2 = Integer.parseInt(parts[4]);
-                        Color c = parseColor(parts[5]);
+                        Color c = highlight ? Color.YELLOW : parseColor(parts[5]);
                         drawBresenham(x1, y1, x2, y2, c);
                     }
                 }
@@ -156,8 +157,8 @@ public class DrawingCanvas extends Pane {
                     if (parts.length >= 5) {
                         int cx = Integer.parseInt(parts[1]);
                         int cy = Integer.parseInt(parts[2]);
-                        int r = Integer.parseInt(parts[3]);
-                        Color c = parseColor(parts[4]);
+                        int r  = Integer.parseInt(parts[3]);
+                        Color c = highlight ? Color.YELLOW : parseColor(parts[4]);
                         drawMidpointCircle(cx, cy, r, c);
                     }
                 }
@@ -167,7 +168,7 @@ public class DrawingCanvas extends Pane {
                         int y1 = Integer.parseInt(parts[2]);
                         int x2 = Integer.parseInt(parts[3]);
                         int y2 = Integer.parseInt(parts[4]);
-                        Color c = parseColor(parts[5]);
+                        Color c = highlight ? Color.YELLOW : parseColor(parts[5]);
                         drawBresenham(x1, y1, x2, y1, c);
                         drawBresenham(x2, y1, x2, y2, c);
                         drawBresenham(x2, y2, x1, y2, c);
@@ -178,8 +179,9 @@ public class DrawingCanvas extends Pane {
                     if (parts.length >= 5) {
                         int x = Integer.parseInt(parts[1]);
                         int y = Integer.parseInt(parts[2]);
-                        Color c = parseColor(parts[parts.length - 1]);
-                        String text = String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length - 1));
+                        Color c = highlight ? Color.YELLOW : parseColor(parts[parts.length - 1]);
+                        int endIdx = highlight ? parts.length - 2 : parts.length - 1;
+                        String text = String.join(" ", java.util.Arrays.copyOfRange(parts, 3, endIdx));
                         gc.setFill(c);
                         gc.fillText(text, toPixelX(x), toPixelY(y));
                     }
@@ -188,22 +190,20 @@ public class DrawingCanvas extends Pane {
                     if (parts.length >= 5) {
                         int cx = Integer.parseInt(parts[1]);
                         int cy = Integer.parseInt(parts[2]);
-                        int r = Integer.parseInt(parts[3]);
-                        Color c = parseColor(parts[4]);
+                        int r  = Integer.parseInt(parts[3]);
+                        Color c = highlight ? Color.YELLOW : parseColor(parts[4]);
                         double scale = getScale();
-                        double px = toPixelX(cx - r);
-                        double py = toPixelY(cy + r);
                         gc.setFill(c);
-                        gc.fillOval(px, py, r * 2 * scale, r * 2 * scale);
+                        gc.fillOval(toPixelX(cx - r), toPixelY(cy + r), r * 2 * scale, r * 2 * scale);
                     }
                 }
                 case "FILLED-RECTANGLE" -> {
                     if (parts.length >= 6) {
                         int x1 = Integer.parseInt(parts[1]);
-                        int x2 = Integer.parseInt(parts[2]);
-                        int y1 = Integer.parseInt(parts[3]);
+                        int y1 = Integer.parseInt(parts[2]);
+                        int x2 = Integer.parseInt(parts[3]);
                         int y2 = Integer.parseInt(parts[4]);
-                        Color c = parseColor(parts[5]);
+                        Color c = highlight ? Color.YELLOW : parseColor(parts[5]);
                         double scale = getScale();
                         double px = toPixelX(Math.min(x1, x2));
                         double py = toPixelY(Math.max(y1, y2));

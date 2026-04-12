@@ -25,37 +25,59 @@ object GraphicsLogic {
       case Left(err) => "ERR\n" + err
       case Right(commands) =>
         val engine = new DrawingEngine()
-        engine.execute(commands) match {
-          case Left(err) => "ERR\n" + err
-          case Right(_) =>
-            // Serialize commands to the format Java canvas expects (high-level shapes)
-            "OK\n" + commandsToOutputString(commands)
+        engine.executeWithSteps(commands) match {
+          case Left(err)    => "ERR\n" + err
+          case Right(steps) =>
+            val lastCommand = steps.lastOption.map(_.command)
+            val boxStr = commands.collectFirst {
+              case BoundingBox(x1, y1, x2, y2) => s"BOX $x1 $y1 $x2 $y2"
+            }.getOrElse("")
+            val shapeLines = serializeCommands(commands, Black, lastCommand)
+            "OK\n" + (boxStr :: shapeLines).mkString("\n")
         }
     }
   }
 
-  /** Convert parsed commands to string format for Java: BOX first, then LINE/CIRCLE/RECTANGLE/TEXT with optional color. */
-  private def commandsToOutputString(commands: List[Command]): String = {
-    def colorName(c: Color): String = c match {
-      case drawing.model.Black => "black"
-      case drawing.model.Red => "red"
-      case drawing.model.Green => "green"
-      case drawing.model.Blue => "blue"
+  private def serializeCommands(cmds: List[Command], color: Color, lastCmd: Option[Command]): List[String] =
+    cmds.flatMap { cmd =>
+      val isLast = lastCmd.contains(cmd)
+      serializeOne(cmd, color, isLast, lastCmd)
     }
-    def go(cmds: List[Command], currentColor: Color): List[String] = cmds.flatMap {
-      case BoundingBox(x1, y1, x2, y2) => List(s"BOX $x1 $y1 $x2 $y2")
-      case Line(x1, y1, x2, y2) => List(s"LINE $x1 $y1 $x2 $y2 ${colorName(currentColor)}")
-      case Rectangle(x1, y1, x2, y2) => List(s"RECTANGLE $x1 $y1 $x2 $y2 ${colorName(currentColor)}")
-      case Circle(x, y, r) => List(s"CIRCLE $x $y $r ${colorName(currentColor)}")
-      case TextAt(x, y, t) => List(s"TEXT $x $y $t ${colorName(currentColor)}")
-      case Draw(c, items) => items.flatMap(item => go(List(item), c))
-      case Fill(c, item) => item match {
-        case Circle(x, y, r) => List(s"FILLED-CIRCLE $x $y $r ${colorName(c)}")
-        case Rectangle(x1, y1, x2, y2) => List(s"FILLED-RECTANGLE $x1 $y1 $x2 $y2 ${colorName(c)}")
-        case _ => go(List(item), c)
-      }
+
+  private def serializeOne(cmd: Command, color: Color, isLast: Boolean, lastCmd: Option[Command]): List[String] = {
+    val flag   = if (isLast) " highlight" else ""
+    cmd match {
+      case BoundingBox(_, _, _, _) => Nil
+      case Line(x1, y1, x2, y2) =>
+        List(s"LINE $x1 $y1 $x2 $y2 ${colorName(color)}$flag")
+      case Rectangle(x1, y1, x2, y2) =>
+        List(s"RECTANGLE $x1 $y1 $x2 $y2 ${colorName(color)}$flag")
+      case Circle(x, y, r) =>
+        List(s"CIRCLE $x $y $r ${colorName(color)}$flag")
+      case TextAt(x, y, t) =>
+        List(s"TEXT $x $y $t ${colorName(color)}$flag")
+      case Draw(c, items) =>
+        items.flatMap(item => serializeOne(item, c, isLast, lastCmd))
+      case Fill(c, item) =>
+        def fillItem(inner: Command, borderColor: Color): List[String] = inner match {
+          case Circle(x, y, r) =>
+            List(s"FILLED-CIRCLE $x $y $r ${colorName(c)}$flag",
+                 s"CIRCLE $x $y $r ${colorName(borderColor)}$flag")
+          case Rectangle(x1, y1, x2, y2) =>
+            List(s"FILLED-RECTANGLE $x1 $y1 $x2 $y2 ${colorName(c)}$flag",
+                 s"RECTANGLE $x1 $y1 $x2 $y2 ${colorName(borderColor)}$flag")
+          case Draw(dc, items) => items.flatMap(fillItem(_, dc))
+          case _              => serializeOne(inner, c, isLast, lastCmd)
+        }
+        fillItem(item, color)
     }
-    if (commands.isEmpty) ""
-    else go(commands, Black).mkString("\n")
   }
+
+  private def colorName(c: Color): String = c match {
+    case Black => "black"
+    case Red   => "red"
+    case Green => "green"
+    case Blue  => "blue"
+  }
+
 }
