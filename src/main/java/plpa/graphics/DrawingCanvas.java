@@ -37,7 +37,8 @@ public class DrawingCanvas extends Pane {
 
     /**
      * Update the drawing using the string that Scala returns (the part after "OK\n").
-     * Format: first line "BOX x1 y1 x2 y2", then lines "LINE x1 y1 x2 y2 color", etc.
+     * Format: first line "BOX x1 y1 x2 y2", then one line per drawable: "PIXEL x y color" or "TEXT x y text color".
+     * Pixels come from DrawingEngine (including fill); each pixel has its own color.
      */
     public void setDrawingData(String data) {
         shapeLines.clear();
@@ -128,92 +129,33 @@ public class DrawingCanvas extends Pane {
         gc.setLineWidth(1);
         gc.strokeRect(left, top, boxW, boxH);
 
-        // Parse and draw each shape line
+        double pixelSize = Math.max(1, scale);
+
         for (String line : shapeLines) {
-            drawShapeLine(line);
+            drawDrawableLine(line, pixelSize);
         }
 
         gc.restore();
     }
 
-    private void drawShapeLine(String line) {
+    private void drawDrawableLine(String line, double pixelSize) {
         String[] parts = line.split("\\s+");
-        if (parts.length < 3) return;
+        if (parts.length < 4) return;
         String kind = parts[0].toUpperCase();
-        boolean highlight = "highlight".equals(parts[parts.length - 1]);
         try {
-            switch (kind) {
-                case "LINE" -> {
-                    if (parts.length >= 6) {
-                        int x1 = Integer.parseInt(parts[1]);
-                        int y1 = Integer.parseInt(parts[2]);
-                        int x2 = Integer.parseInt(parts[3]);
-                        int y2 = Integer.parseInt(parts[4]);
-                        Color c = highlight ? Color.YELLOW : parseColor(parts[5]);
-                        drawBresenham(x1, y1, x2, y2, c);
-                    }
-                }
-                case "CIRCLE" -> {
-                    if (parts.length >= 5) {
-                        int cx = Integer.parseInt(parts[1]);
-                        int cy = Integer.parseInt(parts[2]);
-                        int r  = Integer.parseInt(parts[3]);
-                        Color c = highlight ? Color.YELLOW : parseColor(parts[4]);
-                        drawMidpointCircle(cx, cy, r, c);
-                    }
-                }
-                case "RECTANGLE" -> {
-                    if (parts.length >= 6) {
-                        int x1 = Integer.parseInt(parts[1]);
-                        int y1 = Integer.parseInt(parts[2]);
-                        int x2 = Integer.parseInt(parts[3]);
-                        int y2 = Integer.parseInt(parts[4]);
-                        Color c = highlight ? Color.YELLOW : parseColor(parts[5]);
-                        drawBresenham(x1, y1, x2, y1, c);
-                        drawBresenham(x2, y1, x2, y2, c);
-                        drawBresenham(x2, y2, x1, y2, c);
-                        drawBresenham(x1, y2, x1, y1, c);
-                    }
-                }
-                case "TEXT" -> {
-                    if (parts.length >= 5) {
-                        int x = Integer.parseInt(parts[1]);
-                        int y = Integer.parseInt(parts[2]);
-                        Color c = highlight ? Color.YELLOW : parseColor(parts[parts.length - 1]);
-                        int endIdx = highlight ? parts.length - 2 : parts.length - 1;
-                        String text = String.join(" ", java.util.Arrays.copyOfRange(parts, 3, endIdx));
-                        gc.setFill(c);
-                        gc.fillText(text, toPixelX(x), toPixelY(y));
-                    }
-                }
-                case "FILLED-CIRCLE" -> {
-                    if (parts.length >= 5) {
-                        int cx = Integer.parseInt(parts[1]);
-                        int cy = Integer.parseInt(parts[2]);
-                        int r  = Integer.parseInt(parts[3]);
-                        Color c = highlight ? Color.YELLOW : parseColor(parts[4]);
-                        double scale = getScale();
-                        gc.setFill(c);
-                        gc.fillOval(toPixelX(cx - r), toPixelY(cy + r), r * 2 * scale, r * 2 * scale);
-                    }
-                }
-                case "FILLED-RECTANGLE" -> {
-                    if (parts.length >= 6) {
-                        int x1 = Integer.parseInt(parts[1]);
-                        int y1 = Integer.parseInt(parts[2]);
-                        int x2 = Integer.parseInt(parts[3]);
-                        int y2 = Integer.parseInt(parts[4]);
-                        Color c = highlight ? Color.YELLOW : parseColor(parts[5]);
-                        double scale = getScale();
-                        double px = toPixelX(Math.min(x1, x2));
-                        double py = toPixelY(Math.max(y1, y2));
-                        double pw = Math.abs(x2 - x1) * scale;
-                        double ph = Math.abs(y2 - y1) * scale;
-                        gc.setFill(c);
-                        gc.fillRect(px, py, pw, ph);
-                    }
-                }
-                default -> { }
+            if ("PIXEL".equals(kind) && parts.length >= 4) {
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+                Color c = parseColor(parts[3]);
+                gc.setFill(c);
+                gc.fillRect(toPixelX(x), toPixelY(y), pixelSize, pixelSize);
+            } else if ("TEXT".equals(kind) && parts.length >= 5) {
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+                Color c = parseColor(parts[parts.length - 1]);
+                String text = String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length - 1));
+                gc.setFill(c);
+                gc.fillText(text, toPixelX(x), toPixelY(y));
             }
         } catch (NumberFormatException ignored) { }
     }
@@ -225,53 +167,5 @@ public class DrawingCanvas extends Pane {
             case "blue" -> Color.BLUE;
             default -> Color.BLACK;
         };
-    }
-
-    private void drawBresenham(int x1, int y1, int x2, int y2, Color color) {
-        gc.setFill(color);
-        double pixelSize = Math.max(1, getScale());
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sy = y1 < y2 ? 1 : -1;
-        int err = dx - dy;
-        int x = x1, y = y1;
-        while (true) {
-            double px = toPixelX(x);
-            double py = toPixelY(y);
-            gc.fillRect(px, py, pixelSize, pixelSize);
-            if (x == x2 && y == y2) break;
-            int e2 = 2 * err;
-            if (e2 > -dy) { err -= dy; x += sx; }
-            if (e2 < dx)  { err += dx; y += sy; }
-        }
-    }
-
-    private void drawMidpointCircle(int cx, int cy, int radius, Color color) {
-        gc.setFill(color);
-        int x = radius;
-        int y = 0;
-        int err = 1 - radius;
-        while (x >= y) {
-            plotCirclePoints(cx, cy, x, y);
-            y++;
-            if (err < 0) {
-                err += 2 * y + 1;
-            } else {
-                x--;
-                err += 2 * (y - x) + 1;
-            }
-        }
-    }
-
-    private void plotCirclePoints(int cx, int cy, int x, int y) {
-        double pixelSize = Math.max(1, getScale());
-        int[] dx = { x, y, -y, -x, -x, -y, y, x };
-        int[] dy = { y, x, x, y, -y, -x, -x, -y };
-        for (int i = 0; i < 8; i++) {
-            double px = toPixelX(cx + dx[i]);
-            double py = toPixelY(cy + dy[i]);
-            gc.fillRect(px, py, pixelSize, pixelSize);
-        }
     }
 }
