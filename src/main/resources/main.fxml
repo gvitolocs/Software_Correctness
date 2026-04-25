@@ -16,5 +16,6 @@
         <Label text="Program"/>
         <TextArea fx:id="programEditor" wrapText="false" prefRowCount="14" prefColumnCount="28" style="-fx-font-family: monospace;"/>
         <Button text="Run" onAction="#onRun" maxWidth="Infinity"/>
+        <Button text="Prettify" onAction="#onPrettify" maxWidth="Infinity"/>
     </VBox>
 </HBox>

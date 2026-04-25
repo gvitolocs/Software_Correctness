@@ -79,15 +79,25 @@ object Parser {
         } yield (Rectangle(x1, y1, x2, y2), tail)
 
       case "(" :: "CIRCLE" :: "(" :: x :: y :: ")" :: r :: ")" :: tail =>
-        Right((Circle(x.toInt, y.toInt, r.toInt), tail))
+        for {
+          cx <- parseIntCoord(x, "CIRCLE x")
+          cy <- parseIntCoord(y, "CIRCLE y")
+          rr <- parseIntCoord(r, "CIRCLE radius")
+        } yield (Circle(cx, cy, rr), tail)
 
       case "(" :: "TEXT-AT" :: "(" :: x :: y :: ")" :: rest =>
-        val (textTokens, afterText) = rest.span(_ != ")")
-        val text = textTokens.mkString(" ").stripPrefix("\"").stripSuffix("\"")
-        afterText match {
-          case ")" :: tail => Right((TextAt(x.toInt, y.toInt, text), tail))
-          case _           => Left("Invalid TEXT-AT format")
-        }
+        for {
+          tx <- parseTextCoord(x)
+          ty <- parseTextCoord(y)
+          parsed <- {
+            val (textTokens, afterText) = rest.span(_ != ")")
+            val text = textTokens.mkString(" ").stripPrefix("\"").stripSuffix("\"")
+            afterText match {
+              case ")" :: tail => Right((TextAt(tx, ty, text), tail))
+              case _           => Left("Invalid TEXT-AT format")
+            }
+          }
+        } yield parsed
 
       case "(" :: "DRAW" :: color :: rest =>
         for {
@@ -112,8 +122,30 @@ object Parser {
   /** Parse a point (x y) and return (x, y, remaining tokens). */
   private def parsePoint(tokens: List[String]): Either[String, (Int, Int, List[String])] =
     tokens match {
-      case "(" :: x :: y :: ")" :: rest => Right((x.toInt, y.toInt, rest))
+      case "(" :: x :: y :: ")" :: rest =>
+        for {
+          px <- parseIntCoord(x, "point x")
+          py <- parseIntCoord(y, "point y")
+        } yield (px, py, rest)
       case _                             => Left("Invalid point format")
+    }
+
+  /** TEXT-AT supports decimal coordinates up to two digits after '.' */
+  private def parseTextCoord(token: String): Either[String, Double] =
+    try {
+      val normalized = token.replace(',', '.')
+      val parts = normalized.split("\\.")
+      if (parts.length == 2 && parts(1).length > 2) Left("TEXT-AT supports up to 2 decimal digits")
+      else Right(normalized.toDouble)
+    } catch {
+      case _: NumberFormatException => Left("Invalid TEXT-AT coordinate")
+    }
+
+  private def parseIntCoord(token: String, label: String): Either[String, Int] =
+    try {
+      Right(token.toInt)
+    } catch {
+      case _: NumberFormatException => Left(s"Invalid integer for $label: '$token'")
     }
 
   /** Require the next token to be the given one; return the rest or an error. */
