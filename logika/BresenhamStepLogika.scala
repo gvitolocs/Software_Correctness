@@ -1,9 +1,10 @@
 // #Sireum #Logika
 import org.sireum._
 
-// This file is not part of the drawing application. It is a simplified Logika
-// model of the mathematical update step of Bresenham's algorithm, used for
-// algorithm testing.
+// This file is not part of the drawing application.
+// It is a simplified Logika model of the mathematical update step
+// of Bresenham's line algorithm, used for algorithm testing.
+
 object BresenhamStepLogika {
 
   def step(xIn: Z, yIn: Z, errIn: Z, dx: Z, dy: Z, sx: Z, sy: Z): (Z, Z, Z) = {
@@ -15,8 +16,8 @@ object BresenhamStepLogika {
         sy == 1 | sy == -1
       ),
       Ensures(
-        Res._1 == xIn | Res._1 == xIn + sx,
-        Res._2 == yIn | Res._2 == yIn + sy
+        Res[(Z, Z, Z)]._1 == xIn | Res[(Z, Z, Z)]._1 == xIn + sx,
+        Res[(Z, Z, Z)]._2 == yIn | Res[(Z, Z, Z)]._2 == yIn + sy
       )
     )
 
@@ -41,6 +42,7 @@ object BresenhamStepLogika {
 
   def testMoveBoth(): Unit = {
     val r = step(0, 0, 1, 5, 3, 1, 1)
+
     assert(r._1 == 1)
     assert(r._2 == 1)
     assert(r._3 == 3)
@@ -48,6 +50,7 @@ object BresenhamStepLogika {
 
   def testMoveOnlyX(): Unit = {
     val r = step(0, 0, 3, 5, 3, 1, 1)
+
     assert(r._1 == 1)
     assert(r._2 == 0)
     assert(r._3 == 0)
@@ -55,6 +58,7 @@ object BresenhamStepLogika {
 
   def testMoveOnlyY(): Unit = {
     val r = step(0, 0, -2, 5, 3, 1, 1)
+
     assert(r._1 == 0)
     assert(r._2 == 1)
     assert(r._3 == 3)
